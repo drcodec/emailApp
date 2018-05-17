@@ -1,15 +1,39 @@
 const express = require('express');
-//import express from 'express';
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const keys = require('./config/keys.js');
+
 const app = express();
 
-app.get('/', (req, res) => {
-  res.send({ Amazon: 'app' });
-});
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: keys.googleClientID,
+      clientSecret: keys.googleClientSecret,
+      callBackURL: '/auth/google/callback'
+    },
+    (accessToken, refreshToken, profile, done) => {
+      console.log('access token', accessToken);
+      console.log('refrest token', refreshToken);
+      console.log('profile', profile);
+      //console.log('done', done);
+    }
+  )
+);
+
+app.get(
+  '/auth/google',
+  passport.authenticate('google', {
+    scope: ['profile', 'email']
+  })
+);
+
+app.get('/auth/google/callback', passport.authenticate('google'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT);
 
-// app = expres app to register this route handler with
+// app = express app to register this route handler with
 // get = watch incoming request with this method
 // '/' = watch request trying to access '/'
 // req = object representing the incoming request
